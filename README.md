@@ -51,9 +51,9 @@ Contributions to improve NAP are welcome. Please follow these steps:
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
-Your Name - your.email@example.com
+Yanbo Li - liyanbo0724@gmail.com
 
-Project Link: [https://github.com/yourusername/nap-mvp](https://github.com/yourusername/nap-mvp)
+Project Link: [https://github.com/Lybrust/nap-mvp](https://github.com/Lybrust/nap-mvp)
 
 ## Acknowledgements
 - [NewsAPI](https://newsapi.org/)
