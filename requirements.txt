@@ -1,0 +1,7 @@
+torch==2.3.0
+transformers==4.32.1
+json==2.0.9
+yfinance==0.2.38
+datetime==5.4
+pandas==2.0.3
+requests==2.31.0
