@@ -1,0 +1,214 @@
+
+    <html>
+    <head>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Roboto', sans-serif;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                background-color: #f0f2f5;
+            }
+            #sidebar {
+                width: 300px;
+                height: 100vh;
+                overflow-y: auto;
+                background-color: #ffffff;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                padding: 20px;
+            }
+            #main-content {
+                flex-grow: 1;
+                padding: 20px;
+                height: 100vh;
+                overflow-y: auto;
+            }
+            .article-item {
+                cursor: pointer;
+                padding: 15px;
+                margin-bottom: 10px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+            }
+            .article-item:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .article-item.active {
+                background-color: #e7f3ff;
+                border-left: 4px solid #1877f2;
+            }
+            .article-title {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            .article-metadata {
+                font-size: 0.8em;
+                color: #65676b;
+            }
+            #article-details {
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .sentiment-pill {
+                display: inline-block;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-size: 0.8em;
+                font-weight: bold;
+                margin-right: 10px;
+            }
+            .sentiment-POSITIVE { background-color: #e6f3e6; color: #2e7d32; }
+            .sentiment-NEGATIVE { background-color: #fde7e7; color: #c62828; }
+            .sentiment-NEUTRAL { background-color: #e8eaf6; color: #3f51b5; }
+            .header {
+                background-color: #1877f2;
+                color: white;
+                padding: 20px;
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                border-radius: 8px;
+            }
+            .chart-container {
+                background-color: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+            }
+            .chart-controls {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+            select {
+                padding: 5px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="sidebar">
+            <div class="header">NAP News Feed</div>
+            <div id="article-list"></div>
+        </div>
+        <div id="main-content">
+            <div class="chart-container">
+                <div class="chart-controls">
+                    <select id="index-select">
+                        <option value="^IXIC">NASDAQ Composite</option>
+                        <option value="^DJI">Dow Jones Industrial Average</option>
+                        <option value="^GSPC">S&P 500</option>
+                        <option value="^RUT">Russell 2000</option>
+                        <option value="^NYA">NYSE Composite</option>
+                    </select>
+                    <select id="timeframe-select">
+                        <option value="1wk">1 Week</option>
+                        <option value="1mo" selected>1 Month</option>
+                        <option value="3mo">3 Months</option>
+                        <option value="6mo">6 Months</option>
+                        <option value="1y">1 Year</option>
+                    </select>
+                </div>
+                <div id="stock_chart"></div>
+            </div>
+            <div id="article-details"></div>
+            <div class="chart-container">
+                <div id="sentiment_chart"></div>
+            </div>
+        </div>
+        <script>
+            var results = [{"title":"Kenyan Youth Embrace Bitcoin Amid Deadly Protests Over Finance Bill","summary":"On Tuesday, June 25, thousands took to the streets of Nairobi, the capital of Kenya, in a youth-led protest against the finance bill.","sentiment":"NEGATIVE","sentiment_score":0.9194667935,"url":"https:\/\/www.forbes.com\/sites\/digital-assets\/2024\/06\/26\/kenyan-youth-embrace-bitcoin-amid-deadly-protests-over-finance-bill\/"},{"title":"CPS Announces $436.31 Million Senior Subordinate Asset-Backed Securitization","summary":"Consumer Portfolio Services, Inc. (Nasdaq: CPSS) (CPS or the Company) announced the closing of its third term securitization in 2024.","sentiment":"NEGATIVE","sentiment_score":0.9883890152,"url":"https:\/\/www.globenewswire.com\/news-release\/2024\/06\/26\/2904851\/13171\/en\/CPS-Announces-436-31-Million-Senior-Subordinate-Asset-Backed-Securitization.html"},{"title":"Lula Cements Brazil Central Bank\u2019s Switch to Continuous CPI Target","summary":"Brazil is changing its inflation targeting regime and setting a 3% goal for continuous periods of time instead of a calendar year. Analysts expect the move to reduce political noise for the country.","sentiment":"NEGATIVE","sentiment_score":0.8972975016,"url":"https:\/\/www.yahoo.com\/news\/lula-cements-brazil-central-bank-155526243.html"},{"title":"State Street Global Advisors and Galaxy Asset Management Join Forces to Introduce Investors to The Next Evolution of Digital Asset Investing","summary":"First-movers in asset management seek to serve the digital asset marketplace end-to-end. State Street Global Advisors, the asset management business of State\u2026","sentiment":"POSITIVE","sentiment_score":0.5968507528,"url":"https:\/\/www.investing.com\/news\/press-releases\/state-street-global-advisors-and-galaxy-asset-management-join-forces-to-introduce-investors-to-the-next-evolution-of-digital-asset-investing-93CH-3498483"},{"title":"US Retail Investors Hold Cash, Own Financial Stocks, New Survey Shows","summary":"The Retail Investor Beat report from trading platform eToro highlighted the most popular investments for retail money in 2024. Finance stocks and cash favored most. Technology st\u2026","sentiment":"POSITIVE","sentiment_score":0.7724014521,"url":"https:\/\/www.investopedia.com\/american-retail-investors-cash-financial-stocks-survey-8669785"}];
+            var readTimes = [5, 8, 5, 6, 4];
+            
+            function updateDisplay(index) {
+                $('.article-item').removeClass('active');
+                $('#article-' + index).addClass('active');
+                var row = results[index];
+                var sentimentClass = 'sentiment-' + row.sentiment;
+                var details = `
+                    <h2>${row.title}</h2>
+                    <p class="article-metadata">
+                        <span class="sentiment-pill ${sentimentClass}">${row.sentiment}</span>
+                        <span>${readTimes[index]} min read</span>
+                    </p>
+                    <p><b>Summary:</b> ${row.summary}</p>
+                    <p><b>Sentiment Score:</b> ${row.sentiment_score.toFixed(2)}</p>
+                    <p><a href="${row.url}" target="_blank">Read full article</a></p>
+                `;
+                $('#article-details').html(details);
+            }
+            
+            var articleList = $('#article-list');
+            results.forEach((article, index) => {
+                var sentimentClass = 'sentiment-' + article.sentiment;
+                articleList.append(`
+                    <div class="article-item" id="article-${index}">
+                        <div class="article-title">${article.title}</div>
+                        <div class="article-metadata">
+                            <span class="sentiment-pill ${sentimentClass}">${article.sentiment}</span>
+                            <span>${readTimes[index]} min read</span>
+                        </div>
+                    </div>
+                `);
+            });
+            
+            $('.article-item').click(function() {
+                var index = $(this).attr('id').split('-')[1];
+                updateDisplay(index);
+            });
+            
+            updateDisplay(0);  // Initialize with the first article
+
+            var plotlyDataSentiment = {"data":[{"marker":{"color":"#4CAF50"},"x":["Kenyan Youth Embrace Bitcoin Amid Deadly Protests Over Finance Bill","CPS Announces $436.31 Million Senior Subordinate Asset-Backed Securitization","Lula Cements Brazil Central Bank\u2019s Switch to Continuous CPI Target","State Street Global Advisors and Galaxy Asset Management Join Forces to Introduce Investors to The Next Evolution of Digital Asset Investing","US Retail Investors Hold Cash, Own Financial Stocks, New Survey Shows"],"y":[0.9194667935371399,0.9883890151977539,0.8972975015640259,0.5968507528305054,0.7724014520645142],"type":"bar"}],"layout":{"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmapgl":[{"type":"heatmapgl","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"margin":{"l":0,"r":0,"t":40,"b":0},"title":{"text":"Article Sentiment Scores"},"height":300}};
+            Plotly.newPlot('sentiment_chart', plotlyDataSentiment.data, plotlyDataSentiment.layout);
+
+            function updateStockChart() {
+                var index = $('#index-select').val();
+                var timeframe = $('#timeframe-select').val();
+                var indexName = $('#index-select option:selected').text();
+                
+                fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${index}?range=${timeframe}&interval=1d`)
+                    .then(response => response.json())
+                    .then(data => {
+                        var prices = data.chart.result[0].indicators.quote[0].close;
+                        var timestamps = data.chart.result[0].timestamp.map(t => new Date(t * 1000));
+                        
+                        var trace = {
+                            x: timestamps,
+                            y: prices,
+                            type: 'scatter',
+                            mode: 'lines',
+                            name: 'Close Price'
+                        };
+                        
+                        var layout = {
+                            title: `${indexName} - Last ${$('#timeframe-select option:selected').text()}`,
+                            xaxis: { title: 'Date' },
+                            yaxis: { title: 'Price' },
+                            height: 400,
+                            margin: { l: 50, r: 50, t: 40, b: 50 }
+                        };
+                        
+                        Plotly.newPlot('stock_chart', [trace], layout);
+                    });
+            }
+
+            $('#index-select, #timeframe-select').change(updateStockChart);
+            
+            // Initial stock chart update
+            updateStockChart();
+        </script>
+    </body>
+    </html>
+    
